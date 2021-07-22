@@ -1,0 +1,66 @@
+项目拓展：
+ 拦截器的使用步骤：
+ 1.定义类实现HandlerInterceptor接口
+ 2.在springmvc配置文件中，声明拦截器，让框架知道拦截器的存在。
+ 拦截器的执行时间：
+  1）preHandle（）在请求处理之前， 也就是controller类中的方法执行之前先被拦截。
+        preHandle叫做预处理方法。
+             ---重要：是整个项目的入口，门户。 当preHandle返回true 请求可以被处理。
+             ---      preHandle返回false，请求到此方法就截止。
+             ---
+             --- 参数：
+             ---  Object handler ： 被拦截的控制器对象
+             --- 返回值boolean
+             ---   true：请求是通过了拦截器的验证，可以执行处理器方法。
+                 ---   拦截器的MyInterceptor的preHandle()
+                     =====执行MyController中的doSome方法=====
+                     拦截器的MyInterceptor的postHandle()
+                     拦截器的MyInterceptor的afterCompletion()
+                 ---
+             ---   false：请求没有通过拦截器的验证，请求到达拦截器就截止了。 请求没有被处理
+             ---      拦截器的MyInterceptor的preHandle()
+             ---
+             ---
+             ---  特点：
+             ---   1.方法在控制器方法（MyController的doSome）之前先执行的。
+             ---     用户的请求首先到达此方法
+             ---
+             ---   2.在这个 方法中可以获取请求的信息， 验证请求是否符合要求。
+             ---     可以验证用户是否登录， 验证用户是否有权限访问某个连接地址（url）。
+             ---      如果验证失败，可以截断请求，请求不能被处理。
+             ---      如果验证成功，可以放行请求，此时控制器方法才能执行。
+  2）postHandle()在控制器方法执行之后也会执行拦截器。
+        postHandle:后处理方法。
+             ---  参数：
+             ---  Object handler：被拦截的处理器对象MyController
+             ---   ModelAndView mv:处理器方法的返回值
+
+             ---   特点：
+             ---    1.在处理器方法之后执行的（MyController.doSome()）
+             ---    2.能够获取到处理器方法的返回值ModelAndView,可以修改ModelAndView中的
+             ---    数据和视图，可以影响到最后的执行结果。
+             ---    3.主要是对原来的执行结果做二次修正，
+
+             ---    ModelAndView mv = MyController.doSome();
+             ---    postHandle(request,response,handler,mv);
+  3）afterCompletion()在请求处理完成后也会执行拦截器。
+        afterCompletion:最后执行的方法
+             --- 参数
+             ---   Object handler:被拦截器的处理器对象
+             ---   Exception ex：程序中发生的异常
+             --- 特点:
+             ---  1.在请求处理完成后执行的。框架中规定是当你的视图处理完成后，对视图执行了forward。就认为请求处理完成。
+             ---  2.一般做资源回收工作的， 程序请求过程中创建了一些对象，在这里可以删除，把占用的内存回收。
+ 拦截器和过滤器的区别
+1.过滤器是servlet中的对象，  拦截器是框架中的对象
+2.过滤器实现Filter接口的对象， 拦截器是实现HandlerInterceptor
+3.过滤器是用来设置request，response的参数，属性的，侧重对数据过滤的。
+  拦截器是用来验证请求的，能截断请求。
+4.过滤器是在拦截器之前先执行的。
+5.过滤器是tomcat服务器创建的对象
+  拦截器是springmvc容器中创建的对象
+6.过滤器是一个执行时间点
+  拦截器有三个执行时间点
+7.过滤器可以处理jsp，js，html等等
+  拦截器是侧重拦截对Controller的对象。 如果你的请求不能被DispatcherServlet接收， 这个请求不会执行拦截器内容
+8.拦截器拦截普通类方法执行，过滤器过滤servlet请求响应

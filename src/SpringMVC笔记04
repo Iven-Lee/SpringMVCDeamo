@@ -1,0 +1,15 @@
+项目拓展：
+ 异常处理步骤：
+采用的是AOP的思想。把业务逻辑和异常处理代码分开，解耦合。
+1.新建maven web项目
+2.加入依赖
+3.新建一个自定义父类异常类（继承Throwable或者其子类Exception），再定义它的子类
+4.创建一个普通类，作用全局异常处理类
+  1）在类的上面加入@ControllerAdvice
+  2) 在类中定义方法，方法的上面加入@ExceptionHandler
+5.在Controller抛出定义的子类异常：@ExceptionHandler(value = 定义的子类异常.class)
+6.创建处理异常的视图页面
+7.创建springmvc的配置文件
+ 1）组件扫描器 ，扫描@Controller注解
+ 2）组件扫描器，扫描@ControllerAdvice所在的包名
+ 3）声明注解驱动

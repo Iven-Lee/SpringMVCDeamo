@@ -1,0 +1,67 @@
+ SSM：
+    1)界面层---Servlet---SpringMVC
+    2)业务逻辑层---service类---Spring
+    3)数据访问层（持久层）---DAO类---mybatis
+
+ SpringMVC：（理解是servlet的一个升级)
+    是基于spring的一个框架， 实际上就是spring的一个模块， 专门是做web开发的。
+
+ SpringMVC执行流程(重点)：
+    1）浏览器提交请求到中央调度器
+    2）中央调度器直接将请求转给处理器映射器。
+    3）处理器映射器会根据请求，找到处理该请求的处理器，并将其封装为处理器执行链后返回给中央调度器。
+    4）中央调度器根据处理器执行链中的处理器，找到能够执行该处理器的处理器适配器。
+    5）处理器适配器调用执行处理器。
+    6）处理器将处理结果及要跳转的视图封装到一个对象 ModelAndView 中，并将其返回给处理器适配器。
+    7）处理器适配器直接将结果返回给中央调度器。
+    8）中央调度器调用视图解析器，将 ModelAndView 中的视图名称封装为视图对象。
+    9）视图解析器将封装了的视图对象返回给中央调度器
+    10）中央调度器调用视图对象，让其自己进行渲染，即进行数据填充，形成响应对象。
+    11）中央调度器响应浏览器。
+
+
+ SpringMVCDemo需求：
+    用户在页面发起一个请求，请求交给springmvc的控制器对象，并显示请求的处理结果
+   实现步骤：
+        1、新建maven-web工程
+        2、加入依赖，
+             1)测试依赖:junit
+             2)servlet依赖:javax.servlet
+             3)springmvc依赖:org.springframework（可间接把spring的依赖加入到项目中）
+        3、重点：在WEB-INF/web.xml中注册springmvc框架的核心对象 DispatcherServlet
+             1）DispatcherServlet叫做：中央调度器，是一个servlet，他的父类继承 HttpServlet
+             2）DispatcherServlet也叫做：前端控制器（from controller）
+             3）DispatcherServlet：负责接收用户提交的请求，调用其他控制器对象，并把请求的处理结果显示给用户
+
+        4、webapp/目录下创建一个发起请求的开始页面 index.jsp
+        5、创建控制器类（com.Iven.controller）SpringmvcDemo.java
+            1）在类的上面加入@Controller注解，创建对象，并放到springmvc容器中
+            2) 在类中的方法上面加入@RequestMapping注解
+                    #项目1: @RequestMapping(path = "/hello")---返回String
+                    #项目2: @RequestMapping(path = "/welcome")---返回ModelAndView（BMI身体质量指数测试）
+
+        6、webapp/WEB-INF/view/下创建一个作为结果的展示页面show.jsp，显示请求的处理结果。
+                   注： 在/WEB-INF目录中的动态资源文件受保护可以防止恶意访问
+        7、resources目录下创建springmvc图的配置文件（和spring的配置文件一样）---springmvc.xml
+            1）声明组件扫描器，指定@Controller注解所在的包名
+            2）声明视图解析器，帮助处理视
+
+
+ 项目执行流程
+  1	发起/hello或/welcome请求
+  2	tomcat (web.xml	从url-pattern知道 /* 的请求给DispatcherServlet)
+  3	DispatcherServlet
+      （根据spring.xml配置知道/hello，sayHello()方法与/welcome，testRequestMapping（）方法）
+  4	DispatcherServlet把请求转发给处理器方法
+  5	框架执行方法把得到的ModelAndView进行处理，转发到show.jsp
+
+
+
+知识体系：
+1、springmvc访问流程体系（BMI系统）
+2、jsp文件采用post请求乱码问题
+3、访问静态资源文件问题
+4、多个servlet之间调用（请求转发forward与重定向redirect知识点）
+5、json数据格式返回Ajax请求流程体系
+6、SpringMVC集中异常处理机制
+7、拦截器和过滤器知识点

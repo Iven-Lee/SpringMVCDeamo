@@ -1,0 +1,89 @@
+项目拓展：
+ 一、post请求乱码问题
+    1、在提交请求参数时，get请求方式中文没有乱码。使用post方式提交请求，中文有乱码。
+        ----jsp页面采用<form action="welcome" method="post">
+    2、web.xml中注册声明过滤器，解决post请求乱码的问题
+    3、过滤器可以自定义，也可使用框架中提供的过滤器CharacterEncodingFilter
+    ----在web.xml添加：
+      /*
+           <!--注册声明过滤器，解决post请求乱码的问题-->
+           <filter>
+                <!--characterEncodingFilter自定义名-->
+               <filter-name>characterEncodingFilter</filter-name>
+               <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+               <!--设置项目中使用的字符编码-->
+               <init-param>
+                   <param-name>encoding</param-name>
+                   <param-value>utf-8</param-value>
+               </init-param>
+               <!--强制请求对象（HttpServletRequest）使用encoding编码的值-->
+               <init-param>
+                   <param-name>forceRequestEncoding</param-name>
+                   <param-value>true</param-value>
+               </init-param>
+               <!--强制应答对象（HttpServletResponse）使用encoding编码的值-->
+               <init-param>
+                   <param-name>forceResponseEncoding</param-name>
+                   <param-value>true</param-value>
+               </init-param>
+           </filter>
+           <filter-mapping>
+               <filter-name>characterEncodingFilter</filter-name>
+               <!--
+                  /*:表示强制所有的请求先通过过滤器处理。
+               -->
+               <url-pattern>/*</url-pattern>
+           </filter-mapping>
+      */
+
+ 二、处理静态资源文件访问问题：
+   使用框架的时候， WEB-INF/web.xml中配置的url-pattern可以使用两种值<url-pattern>值</url-pattern>
+      1）.使用扩展名方式，
+       语法 *.xxxx , xxxx是自定义的扩展名。 常用的方式 *.do, *.action, *.mvc等等
+       静态资源可正常访问，但导致不能使用 *.jsp
+      2）.使用斜杠 "/"
+       当你的项目中使用了/ ，它会替代 tomcat中的default。
+       导致所有的静态资源都给DispatcherServlet处理， 默认情况下DispatcherServlet没有处理静态资源的能力。
+       没有控制器对象能处理静态资源的访问。所以静态资源（html，js，图片，css）都是404.
+       动态资源some.do是可以访问，的因为我们程序中有MyController控制器对象，能处理some.do请求。
+
+   采用<url-pattern>/</url-pattern>
+    解决访问动静态资源问题:
+    方法一：（resources/springmvc.xml配置文件）
+       <!--第一种处理静态资源的方式：
+               需要在springmvc配置文件加入 <mvc:default-servlet-handler>
+               原理是： 加入这个标签后，框架会创健控制器对象DefaultServletHttpRequestHandler（类似我们自己创建的MyController）.
+               DefaultServletHttpRequestHandler这个对象可以把接收的请求转发给 tomcat的default这个servlet。
+       -->
+       <mvc:default-servlet-handler />
+
+    方法二：（resources/springmvc.xml配置文件）
+       <!--第二种处理静态资源的方式
+            mvc:resources 加入后框架会创建 ResourceHttpRequestHandler这个处理器对象。
+            让这个对象处理静态资源的访问，不依赖tomcat服务器。
+            mapping:访问静态资源的uri地址， 使用通配符 **
+            location：静态资源在你的项目中的目录位置。
+            images/**:表示 images/p1.jpg  , images/user/logo.gif , images/order/history/list.png
+        -->
+        <mvc:resources mapping="/images/**" location="/images/" />
+        <mvc:resources mapping="/html/**" location="/html/" />
+        <mvc:resources mapping="/js/**" location="/js/" />
+
+
+ 三、多个servlet之间调用
+   请求转发forward与重定向redirect知识点
+   当处理器对请求处理完毕后，向其它资源进行跳转时，有两种跳转方式：请求转发与重定向。
+而根据所要跳转的资源类型，又可分为两类：跳转到页面与跳转到其它处理器。
+    1、forward:表示转发，实现 request.getRequestDispatcher("xx.jsp").forward()
+        //springmvc中：mv.setViewName("forward:/hello.jsp");
+    2、redirect:表示重定向，实现 response.sendRedirect("xxx.jsp")
+        //springmvc中：mv.setViewName("redirect:/hello.jsp");
+    3、请求转发与重定向区别：
+           1）对于请求转发的页面，可以是WEB-INF中页面；
+           2）重定向的页面，是不能为WEB-INF中页面。
+                因为重定向相当于用户再次发出一次请求，而用户是不能直接访问 WEB-INF中资源的。
+           3）请求转发：浏览器发出了1次请求，得到了1次响应
+              请求重定向：浏览器发出了2次请求，得到了2次响应
+           4）请求转发与重定向都不和视图解析器一同工作，就当项目中无视图解析器
+
+
